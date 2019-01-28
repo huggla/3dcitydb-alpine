@@ -1,9 +1,10 @@
 ARG TAG="20181204"
 ARG BASEIMAGE="huggla/postgres-alpine:postgis-$TAG"
 ARG CITYDBVERSION="v4.0.1"
-ARG CLONEGITS="-b \"${CITYDBVERSION}\" --depth 1 https://github.com/3dcitydb/3dcitydb.git"
+ARG CLONEGITS="'-b \"${CITYDBVERSION}\" --depth 1 https://github.com/3dcitydb/3dcitydb.git'"
+ARG MAKEDIRS="/3dcitydb"
 ARG BUILDCMDS=\
-"   cp -a 
+"   cp -a $cloneGitsDir/PostgreSQL/SQLScripts/* /imagefs/3dcitydb "
 
 #--------Generic template (don't edit)--------
 FROM ${CONTENTIMAGE1:-scratch} as content1
@@ -24,20 +25,10 @@ ARG EXPOSEFUNCTIONS
 COPY --from=build /imagefs /
 #---------------------------------------------
 
-RUN chgrp -R 101 /usr/lib/sudo /usr/local/bin/sudo \
- && chmod u+s /usr/local/bin/sudo \
- && chmod u=,g=rx /.r
-
-ENV PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/start" \
-    VAR_LINUX_USER="root" \
-    VAR_FINAL_COMMAND="pause" \
-    VAR_ARGON2_PARAMS="-r" \
-    VAR_SALT_FILE="/proc/sys/kernel/hostname" \
-    HISTFILE="/dev/null"
+ENV VAR_SRID="4326" \
+    VAR_SRSNAME="urn:ogc:def:crs:EPSG::4326"
 
 #--------Generic template (don't edit)--------
 USER starter
 ONBUILD USER root
 #---------------------------------------------
-
-CMD ["sudo","start"]
